@@ -1,37 +1,40 @@
-import { Router, Request, Response } from 'express';
-import { OpenAI } from 'openai';
+import express from "express";
 
-const router = Router();
+const router = express.Router();
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-router.post('/summarize', async (req: Request, res: Response) => {
+router.post("/summarize", async (req, res) => {
   const { text, role } = req.body;
-
-  if (!text || !role) {
-    return res.status(400).json({ error: 'Missing text or role in request body' });
-  }
+  if (!text || !role) return res.status(400).json({ error: "Missing text or role" });
 
   try {
-    const completion = await openai.chat.completions.create({
-      messages: [
-        {
-          role: 'system',
-          content: `You are a helpful assistant that summarizes text for a specific role: ${role}.`,
-        },
-        { role: 'user', content: text },
-      ],
-      model: 'gpt-4o-mini',
+    const API_KEY = process.env.GOOGLE_API_KEY;
+    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
+    
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text: `Summarize the following text for a ${role}: "${text}"` }]
+        }]
+      })
     });
 
-    const summary = completion.choices[0].message.content;
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error("Google AI Error:", data);
+      return res.status(500).json({ error: "Failed to generate summary", details: data });
+    }
+
+    const summary = data.candidates?.[0]?.content?.parts?.[0]?.text || "No summary generated";
     res.json({ summary });
-  } catch (error) {
-    console.error('Error calling OpenAI:', error);
-    res.status(500).json({ error: 'Failed to generate summary' });
+  } catch (err) {
+    console.error("Google AI Error:", err);
+    res.status(500).json({ error: "Failed to generate summary" });
   }
 });
 
 export default router;
+
+
