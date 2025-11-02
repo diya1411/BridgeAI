@@ -11,6 +11,8 @@
   "dependencies": {
     "@ai-sdk/google": "^2.0.25",
     "@ai-sdk/rsc": "^1.0.82",
+    "@supabase/ssr": "^0.7.0",
+    "@supabase/supabase-js": "^2.78.0",
     "ai": "^5.0.82",
     "next": "14.0.3",
     "react": "^18",
