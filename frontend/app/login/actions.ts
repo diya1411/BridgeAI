@@ -34,7 +34,7 @@ export async function signUp(formData: FormData) {
     options: {
       emailRedirectTo: `${origin}/auth/callback`,
       data: {
-        username: username,
+        display_name: username,
       },
     },
   });
